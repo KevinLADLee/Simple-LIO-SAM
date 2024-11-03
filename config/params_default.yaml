@@ -2,8 +2,8 @@
   ros__parameters:
 
     # Topics
-    pointCloudTopic: "/points_raw"               # Point cloud data, 原始点云话题
-    imuTopic: "/imu_raw"                     # IMU data, 原始IMU数据话题
+    pointCloudTopic: "/lidar_points"               # Point cloud data, 原始点云话题
+    imuTopic: "/IMU_data"                     # IMU data, 原始IMU数据话题
     imuOdomTopic: "/lio_sam/imu/odometry"        # IMU pre-preintegration odometry, same frequency as IMU; 
                                                  # IMU里程计, 在imuPreintegration中发布，与IMU频率相同（最高频率）
     lidarOdomTopic: "/lio_sam/mapping/odometry"  # 雷达里程计，在mapOptimization中发布

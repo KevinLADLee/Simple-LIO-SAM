@@ -39,6 +39,7 @@ Date: 2023-02-14
 *******************************************************************************/
 #include "spl_lio_sam/utility.hpp"
 #include "spl_lio_sam/msg/cloud_info.hpp"
+#include <pcl/filters/impl/filter.hpp>
 
 /*
 Veledyne激光雷达的数据类型
@@ -287,26 +288,26 @@ public:
         imuQueue.push_back(thisImu);
 
         // 调试IMU坐标系和雷达坐标系对齐时可以打开下面这段代码，根据作者发布的视频调试
-        // static int count = 0;
-        // if (count%100==0){
-        //     // debug IMU data
-        //     cout << std::setprecision(6);
-        //     cout << "IMU acc: " << endl;
-        //     cout << "x: " << thisImu.linear_acceleration.x << 
-        //         ", y: " << thisImu.linear_acceleration.y << 
-        //         ", z: " << thisImu.linear_acceleration.z << endl;
-        //     cout << "IMU gyro: " << endl;
-        //     cout << "x: " << thisImu.angular_velocity.x << 
-        //         ", y: " << thisImu.angular_velocity.y << 
-        //         ", z: " << thisImu.angular_velocity.z << endl;
-        //     double imuRoll, imuPitch, imuYaw;
-        //     tf2::Quaternion orientation;
-        //     tf2::fromMsg(thisImu.orientation, orientation);
-        //     tf2::Matrix3x3(orientation).getRPY(imuRoll, imuPitch, imuYaw);
-        //     cout << "IMU roll pitch yaw: " << endl;
-        //     cout << "roll: " << pcl::rad2deg(imuRoll) << ", pitch: " << pcl::rad2deg(imuPitch) << ", yaw: " << pcl::rad2deg(imuYaw) << endl << endl;
-        // }
-        // count++;
+        static int count = 0;
+        if (count%100==0){
+            // debug IMU data
+            cout << std::setprecision(6);
+            cout << "IMU acc: " << endl;
+            cout << "x: " << thisImu.linear_acceleration.x << 
+                ", y: " << thisImu.linear_acceleration.y << 
+                ", z: " << thisImu.linear_acceleration.z << endl;
+            cout << "IMU gyro: " << endl;
+            cout << "x: " << thisImu.angular_velocity.x << 
+                ", y: " << thisImu.angular_velocity.y << 
+                ", z: " << thisImu.angular_velocity.z << endl;
+            double imuRoll, imuPitch, imuYaw;
+            tf2::Quaternion orientation;
+            tf2::fromMsg(thisImu.orientation, orientation);
+            tf2::Matrix3x3(orientation).getRPY(imuRoll, imuPitch, imuYaw);
+            cout << "IMU roll pitch yaw: " << endl;
+            cout << "roll: " << pcl::rad2deg(imuRoll) << ", pitch: " << pcl::rad2deg(imuPitch) << ", yaw: " << pcl::rad2deg(imuYaw) << endl << endl;
+        }
+        count++;
     }
 
     /// @brief IMU里程计话题的回调函数，来自imuPreintegration发布的IMU里程计
@@ -415,10 +416,10 @@ public:
             for (size_t i = 0; i < tmpPandarCloudIn->size(); i++) {
                 auto &src = tmpPandarCloudIn->points[i];
                 auto &dst = laserCloudIn->points[i];
-                //dst.x = src.y * -1;
-                //dst.y = src.x;
-                dst.x = src.x;
-                dst.y = src.y;
+                dst.x = src.y * -1;
+                dst.y = src.x;
+                //        dst.x = src.x;
+                //        dst.y = src.y;
                 dst.z = src.z;
                 dst.intensity = src.intensity;
                 dst.ring = src.ring;
@@ -444,6 +445,8 @@ public:
         // 下面的几段代码都是检查点云的格式是否符合要求，没有太多实际作用
         // 但是一些其他激光雷达的ROS节点可能不符合下面的要求，因此没法直接集成到LIOSAM代码中
         // 检查点云是否是密集点云（已经去除无效NaN点）
+        std::vector<int> indices;
+        pcl::removeNaNFromPointCloud(*laserCloudIn, *laserCloudIn, indices);
         if (laserCloudIn->is_dense == false)
         {
             RCLCPP_ERROR(get_logger(), "Point cloud is not in dense format, please remove NaN points first!");
@@ -479,7 +482,7 @@ public:
             deskewFlag = -1;
             for (auto &field : currentCloudMsg.fields)
             {
-                if (field.name == "time" || field.name == "t")
+                if (field.name == "time" || field.name == "t" || field.name == "timestamp")
                 {
                     deskewFlag = 1;
                     break;

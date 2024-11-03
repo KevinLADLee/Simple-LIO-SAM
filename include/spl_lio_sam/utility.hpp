@@ -305,6 +305,8 @@ public:
         else if (sensorStr == "ouster")
         {
             sensor = SensorType::OUSTER;
+        }else if (sensorStr == "hesai"){
+            sensor = SensorType::HESAI;
         }
         else
         {

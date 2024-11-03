@@ -2,8 +2,8 @@
   ros__parameters:
 
     # Topics
-    pointCloudTopic: "/points_raw"               # Point cloud data, 原始点云话题
-    imuTopic: "/imu_raw"                     # IMU data, 原始IMU数据话题
+    pointCloudTopic: "/lidar_points"               # Point cloud data, 原始点云话题
+    imuTopic: "/IMU_data"                     # IMU data, 原始IMU数据话题
     imuOdomTopic: "/lio_sam/imu/odometry"        # IMU pre-preintegration odometry, same frequency as IMU; 
                                                  # IMU里程计, 在imuPreintegration中发布，与IMU频率相同（最高频率）
     lidarOdomTopic: "/lio_sam/mapping/odometry"  # 雷达里程计，在mapOptimization中发布
@@ -15,7 +15,7 @@
 
     # Frames
     imuFrame: "imu_link"                            # IMU数据坐标系，如果IMU和激光雷达坐标系硬件对齐，可以认为IMU、Lidar、Chassis坐标系相同
-    lidarFrame: "velodyne"                        # 激光雷达坐标系，点云数据坐标系，由激光雷达发布的数据指定。与lidarFrame相同，但是不同雷达有不同的名称
+    lidarFrame: "hesai_lidar"                        # 激光雷达坐标系，点云数据坐标系，由激光雷达发布的数据指定。与lidarFrame相同，但是不同雷达有不同的名称
     baseLinkFrame: "base_link"                      # 车辆底盘坐标系
     odomFrame: "odom"                               # 里程计坐标系，在SLAM中一般也是世界坐标系，通常是车辆的起始坐标系
 
@@ -30,12 +30,12 @@
     savePCDDirectory: "/Downloads/LOAM/"         # in your home folder, starts and ends with "/". Warning: the code deletes "LOAM" folder then recreates it. See "mapOptimization" for implementation
 
     # Sensor Settings
-    sensor: velodyne                             # lidar sensor type, either 'velodyne' or 'ouster'
-    N_SCAN: 16                                   # number of lidar channel (i.e., 16, 32, 64, 128)
-    Horizon_SCAN: 1800                           # lidar horizontal resolution (Velodyne:1800, Ouster:512,1024,2048)
+    sensor: hesai                             # lidar sensor type, either 'velodyne' or 'ouster'
+    N_SCAN: 32                                   # number of lidar channel (i.e., 16, 32, 64, 128)
+    Horizon_SCAN: 2000                           # lidar horizontal resolution (Velodyne:1800, Ouster:512,1024,2048)
     downsampleRate: 1                            # default: 1. Downsample your data if too many points. i.e., 16 = 64 / 4, 16 = 16 / 1
-    lidarMinRange: 1.0                           # default: 1.0, minimum lidar range to be used
-    lidarMaxRange: 1000.0                        # default: 1000.0, maximum lidar range to be used
+    lidarMinRange: 0.5                           # default: 1.0, minimum lidar range to be used
+    lidarMaxRange: 60.0                     # default: 1000.0, maximum lidar range to be used
 
     # IMU Settings
     imuAccNoise: 3.9939570888238808e-03          # IMU加速度噪声协方差，可以用Allen方差标定；这里三个轴设为相同的方差
@@ -45,12 +45,12 @@
     imuGravity: 9.80511                          # 重力加速度值
     imuRPYWeight: 0.01                           # 算法中使用IMU的roll、pitch角对激光里程计的结果加权融合
 
-    extrinsicTrans:  [ 0.0,  0.0,  0.0 ]         # IMU向量到雷达坐标系的平移：P_{lidar} = T * P_{imu}
-    extrinsicRot:    [ -1.0,  0.0,  0.0,          # IMU加速度向量到雷达坐标系的旋转
-                       0.0, 1.0,  0.0,
-                       0.0,  0.0, -1.0 ]
-    extrinsicRPY: [ 0.0,  1.0,  0.0,             # IMU角速度向量到雷达坐标系的旋转
-                    -1.0, 0.0,  0.0,
+    extrinsicTrans:  [ 0.0,  0.0,  0.2]         # IMU向量到雷达坐标系的平移：P_{lidar} = T * P_{imu}
+    extrinsicRot:    [ 0.0, -1.0,  0.0,          # IMU加速度向量到雷达坐标系的旋转
+                       1.0, 0.0,  0.0,
+                       0.0,  0.0, 1.0 ]
+    extrinsicRPY: [ 0.0,  -1.0, 0.0,             # IMU角速度向量到雷达坐标系的旋转
+                    1.0, 0.0,  0.0,
                     0.0,  0.0, 1.0 ]
 
     # LOAM feature threshold
