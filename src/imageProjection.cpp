@@ -83,6 +83,20 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(OusterPointXYZIRT,
     (uint8_t, ring, ring) (uint16_t, ambient, ambient) (uint32_t, range, range)
 )
 
+
+struct PandarPointXYZIRT {
+    PCL_ADD_POINT4D
+    float intensity;
+    double timestamp;
+    uint16_t ring;                      ///< laser ring number
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW // make sure our new allocators are aligned
+} EIGEN_ALIGN16;
+POINT_CLOUD_REGISTER_POINT_STRUCT(PandarPointXYZIRT,
+(float, x, x) (float, y, y) (float, z, z) (float, intensity, intensity)
+(double, timestamp, timestamp)
+(uint16_t, ring, ring)
+)
+
 // Use the Velodyne point format as a common representation
 using PointXYZIRT = VelodynePointXYZIRT;
 
@@ -132,9 +146,10 @@ private:
 
     pcl::PointCloud<PointXYZIRT>::Ptr laserCloudIn;
     pcl::PointCloud<OusterPointXYZIRT>::Ptr tmpOusterCloudIn;
+    pcl::PointCloud<PandarPointXYZIRT>::Ptr tmpPandarCloudIn;
+    
     pcl::PointCloud<PointType>::Ptr   fullCloud;
     pcl::PointCloud<PointType>::Ptr   extractedCloud;
-
     // 当点云的time/t字段不可用，也就是点云中不包含每个点的时间戳，无法进行去畸变，直接返回原始点云
     int deskewFlag;
     // 存储点云的range图像
@@ -214,6 +229,7 @@ public:
     {
         laserCloudIn.reset(new pcl::PointCloud<PointXYZIRT>());
         tmpOusterCloudIn.reset(new pcl::PointCloud<OusterPointXYZIRT>());
+        tmpPandarCloudIn.reset(new pcl::PointCloud<PandarPointXYZIRT>());
         fullCloud.reset(new pcl::PointCloud<PointType>());
         extractedCloud.reset(new pcl::PointCloud<PointType>());
 
@@ -390,6 +406,27 @@ public:
                 dst.time = src.t * 1e-9f;
             }
         }
+        else if (sensor == SensorType::HESAI)
+        {
+            pcl::moveFromROSMsg(currentCloudMsg, *tmpPandarCloudIn);
+            laserCloudIn->points.resize(tmpPandarCloudIn->size());
+            laserCloudIn->is_dense = tmpPandarCloudIn->is_dense;
+            double time_begin = tmpPandarCloudIn->points[0].timestamp;
+            for (size_t i = 0; i < tmpPandarCloudIn->size(); i++) {
+                auto &src = tmpPandarCloudIn->points[i];
+                auto &dst = laserCloudIn->points[i];
+                //dst.x = src.y * -1;
+                //dst.y = src.x;
+                dst.x = src.x;
+                dst.y = src.y;
+                dst.z = src.z;
+                dst.intensity = src.intensity;
+                dst.ring = src.ring;
+                //dst.tiSme = src.t * 1e-9f;
+                dst.time = src.timestamp - time_begin; // s
+            }
+        }
+        
         else
         {
             RCLCPP_ERROR_STREAM(get_logger(), "Unknown sensor type: " << int(sensor));

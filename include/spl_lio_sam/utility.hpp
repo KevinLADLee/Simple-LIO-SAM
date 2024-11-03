@@ -60,7 +60,7 @@ using namespace std;
 
 typedef pcl::PointXYZI PointType;
 
-enum class SensorType { VELODYNE, OUSTER };
+enum class SensorType { VELODYNE, OUSTER, HESAI };
 
 class ParamServer : public rclcpp::Node
 {
