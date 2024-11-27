@@ -4,12 +4,11 @@
     # Topics
     pointCloudTopic: "/lidar_points"               # Point cloud data, 原始点云话题
     # imuTopic: "/livox/imu"                     # IMU data, 原始IMU数据话题
-    # imuTopic: "/IMU_data"
-    imuTopic: "/Ins"
+    imuTopic: "/IMU_data"
     imuOdomTopic: "/lio_sam/imu/odometry"        # IMU pre-preintegration odometry, same frequency as IMU; 
                                                  # IMU里程计, 在imuPreintegration中发布，与IMU频率相同（最高频率）
     lidarOdomTopic: "/lio_sam/mapping/odometry"  # 雷达里程计，在mapOptimization中发布
-    gpsTopic: "/Gnss1"                     # GPS odometry topic from navsat, see module_navsat.launch file. 
+    gpsTopic: "/Gnss"                     # GPS odometry topic from navsat, see module_navsat.launch file. 
                                                  # gps原始数据经过robot_localization包处理后发布出来的gps数据，暂未使用
 
     # Services
@@ -22,7 +21,7 @@
     odomFrame: "odom"                               # 里程计坐标系，在SLAM中一般也是世界坐标系，通常是车辆的起始坐标系
 
     # GPS Settings
-    useImuHeadingInitialization: false           # if using GPS data, set to "true"
+    useImuHeadingInitialization: true           # if using GPS data, set to "true"
     useGpsElevation: false                       # if GPS elevation is bad, set to "false"
     gpsCovThreshold: 2.0                         # m^2, threshold for using GPS data
     poseCovThreshold: 25.0                       # m^2, threshold for using GPS data
@@ -40,14 +39,19 @@
     lidarMaxRange: 60.0                     # default: 1000.0, maximum lidar range to be used
 
     # IMU Settings
-    imuAccNoise: 0.01          # IMU加速度噪声协方差，可以用Allen方差标定；这里三个轴设为相同的方差
-    imuGyrNoise: 0.001          # IMU角速度噪声协方差，可以用Allen方差标定；这里三个轴设为相同的方差
-    imuAccBiasN: 0.001          # IMU加速度偏差，三轴统一
-    imuGyrBiasN: 0.001          # IMU角速度偏差，三轴统一
+    imuAccNoise: 3.9939570888238808e-03          # IMU加速度噪声协方差，可以用Allen方差标定；这里三个轴设为相同的方差
+    imuGyrNoise: 1.5636343949698187e-03          # IMU角速度噪声协方差，可以用Allen方差标定；这里三个轴设为相同的方差
+    imuAccBiasN: 6.4356659353532566e-05          # IMU加速度偏差，三轴统一
+    imuGyrBiasN: 3.5640318696367613e-05          # IMU角速度偏差，三轴统一
     imuGravity: 9.80511                          # 重力加速度值
     imuRPYWeight: 0.01                           # 算法中使用IMU的roll、pitch角对激光里程计的结果加权融合
-    extrinsicTrans:  [ -0.378,  0.0, 1.130]         # IMU向量到雷达坐标系的平移：P_{lidar} = T * P_{imu}
-    # extrinsicTrans:  [ 0.0,  0.0, 0.0] 
+
+
+
+
+
+    # extrinsicTrans:  [ -0.378,  0.0, 1.130]         # IMU向量到雷达坐标系的平移：P_{lidar} = T * P_{imu}
+    extrinsicTrans:  [ 0.0,  0.0, 0.1] 
 
     # IMU加速度向量到雷达坐标系的旋转
     extrinsicRot:    [ 1.0, 0.0, 0.0,            
